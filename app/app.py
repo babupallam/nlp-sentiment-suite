@@ -23,22 +23,29 @@ app = Flask(__name__)
 def predict_sentiment(model_name, text):
     try:
         if model_name == "Logistic Regression":
-            return predict_logistic(text)
+            result = predict_logistic(text)
 
         elif model_name == "Naive Bayes":
-            return predict_naive_bayes(text)
+            result = predict_naive_bayes(text)
 
         elif model_name == "SVM":
-            return predict_svm(text)
+            result = predict_svm(text)
 
         elif model_name == "LSTM":
-            return predict_lstm(text)
+            result = predict_lstm(text)
 
         elif model_name == "BERT":
-            return predict_bert(text)
+            result = predict_bert(text)
 
         else:
-            return "Invalid Model Selected"
+            return "Error: Invalid Model Selected"
+
+        # If result is a numpy float, convert it to a string
+        if isinstance(result, (np.float64, float)):
+            return str(result)
+
+        # If result is valid, return it as a string
+        return result
 
     except Exception as e:
         return f"Error: {str(e)}"
@@ -58,7 +65,7 @@ def predict():
         return jsonify({"error": "Please provide both text and model selection."})
 
     sentiment = predict_sentiment(model_name, text)
-    if "Error" in sentiment:
+    if sentiment.startswith("Error"):
         return jsonify({"error": sentiment})
 
     return jsonify({"sentiment": sentiment})
