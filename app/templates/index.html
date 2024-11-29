@@ -30,9 +30,6 @@
             background-color: #e0e0e0;
             transform: scale(1.05);
         }
-        textarea {
-            resize: none;
-        }
         #result-box {
             margin-top: 20px;
             padding: 10px;
@@ -68,10 +65,10 @@
             <button class="sample-btn" onclick="setInputText('I hate everything about this. 😡')">I hate everything about this. 😡</button>
             <button class="sample-btn" onclick="setInputText('Wow, that was amazing! 😍')">Wow, that was amazing! 😍</button>
             <button class="sample-btn" onclick="setInputText('I feel so relaxed and at peace. 🧘‍♀️')">I feel so relaxed and at peace. 🧘‍♀️</button>
+            <button class="sample-btn" onclick="setInputText('I am furious about the service I received. 😠')">I am furious about the service I received. 😠</button>
+            <button class="sample-btn" onclick="setInputText('This is okay, nothing special. 😐')">This is okay, nothing special. 😐</button>
+            <button class="sample-btn" onclick="setInputText('I am so proud of myself today! 🎉')">I am so proud of myself today! 🎉</button>
             <button class="sample-btn" onclick="setInputText('I am feeling anxious and stressed. 😟')">I am feeling anxious and stressed. 😟</button>
-            <button class="sample-btn" onclick="setInputText('I am so proud of myself today! 🥳')">I am so proud of myself today! 🥳</button>
-            <button class="sample-btn" onclick="setInputText('I am overwhelmed with joy. 😄')">I am overwhelmed with joy. 😄</button>
-            <button class="sample-btn" onclick="setInputText('I do not know what to feel about this. 🤔')">I do not know what to feel about this. 🤔</button>
         </div>
 
         <!-- Input Text -->
@@ -83,12 +80,23 @@
         <!-- Model Selector -->
         <div class="mb-3">
             <label for="modelSelect" class="form-label">Select Model:</label>
-            <select id="modelSelect" class="form-select">
-                <option value="" disabled selected>Select a model</option>
-                {% for model in models %}
-                <option value="{{ model }}">{{ model }}</option>
-                {% endfor %}
-            </select>
+            <div class="btn-group w-100" role="group" id="modelSelect">
+                <input type="radio" class="btn-check" name="model" id="logistic_regression" value="logistic_regression" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="logistic_regression">Logistic Regression</label>
+
+                <input type="radio" class="btn-check" name="model" id="naive_bayes" value="naive_bayes" autocomplete="off">
+                <label class="btn btn-outline-primary" for="naive_bayes">Naive Bayes</label>
+
+                <input type="radio" class="btn-check" name="model" id="svm" value="svm" autocomplete="off">
+                <label class="btn btn-outline-primary" for="svm">SVM</label>
+
+                <input type="radio" class="btn-check" name="model" id="lstm" value="lstm" autocomplete="off">
+                <label class="btn btn-outline-primary" for="lstm">LSTM</label>
+
+                <input type="radio" class="btn-check" name="model" id="bert" value="bert" autocomplete="off">
+                <label class="btn btn-outline-primary" for="bert">BERT</label>
+
+            </div>
         </div>
 
         <!-- Predict Button -->
@@ -107,7 +115,7 @@
         // Predict sentiment
         async function predictSentiment() {
             const userText = document.getElementById("userText").value;
-            const model = document.getElementById("modelSelect").value;
+            const selectedModel = document.querySelector('input[name="model"]:checked').value;
 
             if (!userText) {
                 alert("Please enter text for sentiment analysis.");
@@ -117,7 +125,7 @@
             // Send data to backend
             const formData = new FormData();
             formData.append('text', userText);
-            formData.append('model', model);
+            formData.append('model', selectedModel);
 
             try {
                 const response = await fetch("/predict", {
@@ -129,8 +137,9 @@
                     throw new Error("Failed to get a valid response from server");
                 }
 
-                const data = await response.json();
-                console.log(data); // Debugging line to see the response
+                const responseText = await response.text();
+                console.log("[DEBUG] Response Text:", responseText);
+                const data = JSON.parse(responseText);
 
                 const resultBox = document.getElementById("result-box");
                 resultBox.style.display = "block"; // Show result box
@@ -153,7 +162,7 @@
                     resultBox.textContent = "⚠️ Unexpected sentiment value received.";
                 }
             } catch (error) {
-                console.error(error);
+                console.error("[ERROR]", error);
                 alert("An unexpected error occurred: " + error.message);
             }
         }
